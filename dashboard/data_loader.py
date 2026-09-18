@@ -128,8 +128,12 @@ def get_expected_energy(chiller_id: str) -> Optional[pd.Series]:
     """
     # Check for real Person 1 ML output files
     candidates = [
+        os.path.join(BASE_DIR, "outputs", "expected_energy.csv"),
+        os.path.join(BASE_DIR, "outputs", "chiller_timeseries.csv"),
+        os.path.join(BASE_DIR, "outputs", "anomaly_results.csv"),
         os.path.join(BASE_DIR, "expected_energy.csv"),
         os.path.join(BASE_DIR, "output", "expected_energy.csv"),
+        os.path.join(BASE_DIR, "outputs", "anomaly_results.json"),
         os.path.join(BASE_DIR, "anomaly_results.json"),
         os.path.join(BASE_DIR, "output", "anomaly_results.json"),
     ]
@@ -171,6 +175,7 @@ def get_anomaly_data(chiller_id: str) -> Optional[Dict[str, Any]]:
     Returns dict if available, else None.
     """
     candidates = [
+        os.path.join(BASE_DIR, "outputs", "anomaly_results.json"),
         os.path.join(BASE_DIR, "anomaly_results.json"),
         os.path.join(BASE_DIR, "output", "anomaly_results.json"),
         os.path.join(BASE_DIR, "mock_data", "anomaly_results.json")
@@ -181,7 +186,13 @@ def get_anomaly_data(chiller_id: str) -> Optional[Dict[str, Any]]:
             try:
                 with open(path, "r", encoding="utf-8") as f:
                     data = json.load(f)
-                    if isinstance(data, dict):
+                    # Support wrapped dictionary with investigation_cases key
+                    if isinstance(data, dict) and "investigation_cases" in data:
+                        cases = data.get("investigation_cases", [])
+                        for item in cases:
+                            if isinstance(item, dict) and item.get("equipment", "").upper().replace("_", "-") == chiller_id.upper().replace("_", "-"):
+                                return item
+                    elif isinstance(data, dict):
                         req_equip = data.get("equipment", "")
                         if req_equip.upper().replace("_", "-") == chiller_id.upper().replace("_", "-") or not req_equip:
                             return data

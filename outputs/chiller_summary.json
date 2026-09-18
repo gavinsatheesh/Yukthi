@@ -1,0 +1,41 @@
+[
+  {
+    "equipment": "CHILLER-01",
+    "status": "NORMAL",
+    "health_index": 100,
+    "current_deviation_pct": -3.2,
+    "persistent": false,
+    "consecutive_abnormal_readings": 0,
+    "trend": "STABLE",
+    "active_investigations": 47,
+    "total_anomalies_detected": 426,
+    "anomaly_rate_pct": 5.11,
+    "health_index_disclaimer": "Operational Health Index is an algorithmic score (0-100) reflecting recent conformance to learned energy baselines under operating context. It is not a direct physical equipment health measurement."
+  },
+  {
+    "equipment": "CHILLER-02",
+    "status": "NORMAL",
+    "health_index": 100,
+    "current_deviation_pct": -20.3,
+    "persistent": false,
+    "consecutive_abnormal_readings": 0,
+    "trend": "DECREASING",
+    "active_investigations": 18,
+    "total_anomalies_detected": 121,
+    "anomaly_rate_pct": 1.45,
+    "health_index_disclaimer": "Operational Health Index is an algorithmic score (0-100) reflecting recent conformance to learned energy baselines under operating context. It is not a direct physical equipment health measurement."
+  },
+  {
+    "equipment": "CHILLER-03",
+    "status": "NORMAL",
+    "health_index": 100,
+    "current_deviation_pct": -8.9,
+    "persistent": false,
+    "consecutive_abnormal_readings": 0,
+    "trend": "DECREASING",
+    "active_investigations": 44,
+    "total_anomalies_detected": 246,
+    "anomaly_rate_pct": 2.96,
+    "health_index_disclaimer": "Operational Health Index is an algorithmic score (0-100) reflecting recent conformance to learned energy baselines under operating context. It is not a direct physical equipment health measurement."
+  }
+]

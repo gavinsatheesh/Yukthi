@@ -5,52 +5,109 @@ Chiller Forensics moves beyond primitive static thresholds (*Sensor → Threshol
 
 ---
 
-## 🚀 Quick Start (Local Run)
+## Core Concept & Philosophy
 
-Ensure dependencies are installed:
+Rather than relying on arbitrary static power thresholds, **Chiller Forensics** learns the unique thermodynamic and operational profile of each chiller under real operating conditions:
+
+$$\text{Context (Building Load, Flow Rates, Ambient Weather, Time)} \xrightarrow{\text{ML Regressor}} \text{Expected Energy (kWh)}$$
+
+A reading is identified as anomalous **only when energy consumption significantly deviates from what the model expects for those exact operating conditions**.
+
+1. **Primary Signal — Statistical Residual Z-Score**:
+   $$\text{residual} = y_t - \hat{y}_t, \quad z = \frac{\text{residual} - \mu_{train}}{\sigma_{train}}$$
+   Calibrated against the chiller's normal training baseline.
+2. **Persistence Tracking**:
+   Single deviations trigger `WATCH`. Sustained sequences ($\ge 3$ consecutive readings) elevate to `INVESTIGATE` or `PRIORITY`.
+3. **Forensic Context Evidence (Non-Causal)**:
+   Extracts coinciding shifts in operating temperatures, flow rates, and ambient humidity during anomalous windows compared to prior normal baselines without making ungrounded causal claims.
+4. **Operational Health Index**:
+   Algorithmic proxy (0–100) reflecting operational baseline conformity.
+
+---
+
+## Project Structure
+
+```
+├── ml/
+│   ├── config.py         # Centralized prototype scoring parameters & paths
+│   ├── preprocess.py     # Leakage-safe chronological preprocessing & imputation
+│   ├── model.py          # Equipment-specific Random Forest regressors & calibration
+│   ├── anomaly.py        # Residual z-scores, persistence, events & context evidence
+│   └── pipeline.py       # Master one-command execution pipeline
+├── app/
+│   └── api.py            # FastAPI REST backend for frontend integration
+├── dashboard/
+│   ├── app.py            # Main Streamlit dashboard application
+│   ├── components.py     # Plotly visualizations & forensic cards
+│   └── data_loader.py    # Seamless real outputs and fallback loader
+├── outputs/              # Generated analysis artifacts
+│   ├── anomaly_results.csv
+│   ├── anomaly_results.json
+│   ├── chiller_summary.json
+│   ├── timeline_replay.json
+│   ├── chiller_timeseries.csv
+│   └── expected_energy.csv
+├── mock_data/            # Contract verification fallback data
+├── requirements.txt
+└── README.md
+```
+
+---
+
+## 🚀 Quick Start
+
+### 1. Install Dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-Launch the Streamlit dashboard:
-```bash
-python -m streamlit run dashboard/app.py
+### 2. Run the ML Pipeline (One Command)
+```powershell
+& ".\.venv\Scripts\python.exe" ml/pipeline.py
+# Or: python ml/pipeline.py
 ```
-*(Or `streamlit run dashboard/app.py`)*
+This single command:
+1. Loads and cleans `development_dataset.csv` (24,994 records across 3 chillers).
+2. Performs chronological 80/20 train/test splits.
+3. Trains individual `RandomForestRegressor` models for `CHILLER-01`, `CHILLER-02`, and `CHILLER-03`.
+4. Calibrates baseline residual distributions ($\mu_{res}, \sigma_{res}$) on training sets.
+5. Evaluates statistical residual z-scores and persistence ($\ge 3$ readings).
+6. Generates 124 actionable investigation events with non-causal contextual shift evidence.
+7. Exports frontend-ready CSV and JSON files to `outputs/`.
 
-The dashboard will open automatically in your browser at `http://localhost:8501`.
+### 3. Launch the Streamlit Dashboard
+```bash
+streamlit run dashboard/app.py
+```
+The dashboard will open in your browser at `http://localhost:8501`.
 
----
-
-## 📁 Data Integration & Fallback Architecture
-
-The frontend automatically detects output files from Person 1's ML pipeline in the root directory or `output/` directory:
-- `chiller_summary.json` or `chiller_summary.csv`
-- `anomaly_results.json` or `anomaly_results.csv`
-- `chiller_timeseries.csv`
-
-If Person 1's outputs are not present or still generating, the dashboard seamlessly loads mock data from `mock_data/` without crashing or displaying error stack traces.
+### 4. (Optional) Run the FastAPI REST Backend
+```powershell
+& ".\.venv\Scripts\uvicorn.exe" app.api:app --reload --port 8000
+```
+- `GET /chillers`: Operational health summaries for all chillers.
+- `GET /chillers/{equipment_id}/timeline`: Chronological replay timeline.
+- `GET /investigations`: Filtered structured investigation cases.
+- `GET /investigations/{case_id}`: Detailed case investigation with context evidence.
 
 ---
 
 ## 🏆 60-Second Judge Presentation Demo Sequence
 
-1. **Enable Demo Mode**: In the left sidebar, check **"⚡ Enable 60-Second Judge Demo Mode"**.
-2. **Fleet Overview (0–10s)**: Point to the top Fleet Overview cards. Show how `Chiller_01` is 🟢 NORMAL (+3.2% deviation), while `Chiller_02` is flagged as 🔴 **INVESTIGATE** (+25.8% excess energy consumption, 7 persistent readings).
-3. **Investigation Header (10–20s)**: Scroll to the Investigation Case KPI metrics. Highlight that Actual Energy is **103.7 kWh** vs Learned Baseline Expected Energy of **82.4 kWh**. Point to the backend explanation: *"Energy consumption is substantially above learned normal behaviour for the observed operating conditions."*
-4. **Actual vs Expected Plotly Graph (20–35s)**: Show the Plotly chart comparing Actual Energy against Expected Energy, highlighting the red marker region where the deviation escalated.
-5. **Anomaly Replay Slider (35–45s)**: Drag the **Anomaly Replay Slider** to scrub through time. Show the transition from `NORMAL` → `WATCH` → `PERSISTENT` → `INVESTIGATE`.
-6. **What Changed & Recommendations (45–60s)**: Point out the **"WHAT CHANGED?"** section showing contextual parameter shifts (Cooling Water Temp +8.1% ↑, Chilled Water Flow -5.0% ↓) alongside the actionable **RECOMMENDED INVESTIGATION** checklist.
+1. **Fleet Overview (0–10s)**: Point to the top Fleet Overview cards. Show how chillers are monitored with status evaluations and deviation percentages.
+2. **Investigation Header (10–20s)**: Switch to the Chiller Investigation tab. Highlight Actual Energy vs Learned Baseline Expected Energy under prevailing conditions.
+3. **Actual vs Expected Plotly Graph (20–35s)**: Show the Plotly chart comparing Actual Energy against Expected Baseline Energy, displaying anomaly windows.
+4. **Anomaly Replay Slider (35–45s)**: Drag the **Anomaly Replay Slider** in the Anomaly Replay tab to scrub through chronological timestamps.
+5. **What Changed & Recommendations (45–60s)**: Highlight the **INVESTIGATION REPORT** section showing coinciding contextual parameter shifts alongside actionable engineering checklist recommendations.
 
 ---
 
-## 🛠️ Created / Modified Files
+## Prototype Scoring Parameters
 
-- `dashboard/app.py`: Main Streamlit application entry point & layout controls.
-- `dashboard/components.py`: Plotly charts, Anomaly Replay timeline scrubber, contextual tables, and CSS dark theme.
-- `dashboard/data_loader.py`: Safe data ingestion module with fallback support for mock data and live ML outputs.
-- `mock_data/anomaly_results.json`: JSON output matching Person 1's data contract.
-- `mock_data/chiller_summary.json`: Fleet status JSON summary file.
-- `mock_data/chiller_timeseries.csv`: Time-series dataset with energy baselines and anomaly tags.
-- `requirements.txt`: Python package requirements.
-- `README.md`: System documentation & presentation script.
+Configurable in `ml/config.py`:
+- `ANOMALY_Z_THRESHOLD = 2.5`: Statistical residual z-score threshold for defining an abnormal observation.
+- `PERSISTENCE_COUNT = 3`: Minimum consecutive abnormal readings (90 minutes) required for `INVESTIGATE` status.
+- `WATCH_DEVIATION_PCT = 10.0%`: Watch severity threshold.
+- `INVESTIGATION_DEVIATION = 20.0%`: Investigation severity threshold.
+- `PRIORITY_DEVIATION = 35.0%`: High priority severity threshold.
+- `REFERENCE_WINDOW_SIZE = 48`: Historical baseline window (24 hours) for non-causal context evidence.
