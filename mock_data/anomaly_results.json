@@ -1,0 +1,46 @@
+{
+    "equipment": "Chiller_02",
+    "timestamp": "2026-01-15 12:30:00",
+    "actual_energy": 103.7,
+    "expected_energy": 82.4,
+    "deviation_pct": 25.8,
+    "residual": 21.3,
+    "anomaly_score": 0.91,
+    "severity": "INVESTIGATE",
+    "persistent": true,
+    "consecutive_abnormal_readings": 7,
+    "trend": "INCREASING",
+    "context_changes": [
+        {
+            "variable": "Cooling Water Temperature",
+            "normal_value": 26.0,
+            "current_value": 28.1,
+            "change_pct": 8.1
+        },
+        {
+            "variable": "Chilled Water Flow Rate",
+            "normal_value": 85.0,
+            "current_value": 80.75,
+            "change_pct": -5.0
+        },
+        {
+            "variable": "Building Load",
+            "normal_value": 450.0,
+            "current_value": 453.6,
+            "change_pct": 0.8
+        },
+        {
+            "variable": "Outside Temperature",
+            "normal_value": 82.0,
+            "current_value": 82.9,
+            "change_pct": 1.1
+        }
+    ],
+    "investigation_summary": "Energy consumption is substantially above learned normal behaviour for the observed operating conditions.",
+    "recommended_investigation": [
+        "Check cooling-water operating conditions",
+        "Review heat-transfer performance",
+        "Review chilled-water flow and related operating conditions",
+        "Compare with recent normal operating baseline"
+    ]
+}

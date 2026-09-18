@@ -1,0 +1,32 @@
+[
+  {
+    "equipment": "Chiller_01",
+    "status": "NORMAL",
+    "health_index": 96,
+    "current_deviation_pct": 3.2,
+    "persistent": false,
+    "consecutive_abnormal_readings": 0,
+    "trend": "STABLE",
+    "active_investigations": 0
+  },
+  {
+    "equipment": "Chiller_02",
+    "status": "INVESTIGATE",
+    "health_index": 54,
+    "current_deviation_pct": 25.8,
+    "persistent": true,
+    "consecutive_abnormal_readings": 7,
+    "trend": "INCREASING",
+    "active_investigations": 1
+  },
+  {
+    "equipment": "Chiller_03",
+    "status": "WATCH",
+    "health_index": 78,
+    "current_deviation_pct": 11.4,
+    "persistent": false,
+    "consecutive_abnormal_readings": 2,
+    "trend": "STABLE",
+    "active_investigations": 0
+  }
+]
